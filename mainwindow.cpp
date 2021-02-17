@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle("Kutsal Kitaplar");
+    currentFont = 12;
 
     auto dbFile = QCoreApplication::applicationDirPath() + "/Kutsal_Kitaplar.db";
     if (!QFile::exists(dbFile))
@@ -19,14 +20,17 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     currentType = BookTypes::Kuran;
-    ui->centralwidget->setStyleSheet("font: 11pt; color:#ECF0F1; background-color: #AAB7B8;");
-    ui->textAyetler->setStyleSheet("font: 11pt; color:#ECF0F1; background-color: #0E6655;");
-    ui->listSureler->setStyleSheet("font: 11pt; color:#212F3D ; background-color: #ECF0F1 ;");
-    ui->tableKelime->setStyleSheet("font: 11pt; color:#212F3D; background-color: #ECF0F1;");
+    ui->centralwidget->setStyleSheet("font-size: 12pt; color:#ECF0F1; background-color: #AAB7B8;");
+    ui->textAyetler->setStyleSheet("font-size: 12pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
+    ui->listSureler->setStyleSheet("font-size: 12pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
+    ui->tableKelime->setStyleSheet("font-size: 12pt; color:#212F3D; background-color: #ECF0F1; padding: 6px; spacing: 6px;");
     ui->pushSearch->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
     ui->pushExit->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
-    ui->comboKitaplar->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->lineEditSearch->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->comboKitaplar->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->comboFont->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->labelFont->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->lineEditSearch->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->comboFont->setCurrentIndex(0);
 
     db = new DbManager(dbFile);
 
@@ -78,8 +82,6 @@ void MainWindow::on_listSureler_clicked(const QModelIndex &index)
     }
 
     auto model_ayet = db->getAyet(currentType, sureno);
-    qDebug() << model_ayet->rowCount();
-
 
     ui->textAyetler->clear();
 
@@ -150,4 +152,16 @@ void MainWindow::on_comboKitaplar_currentIndexChanged(int index)
     QModelIndex m_index= ui->listSureler->model()->index(0,0);
     on_listSureler_clicked(m_index);
 
+}
+
+void MainWindow::on_comboFont_currentIndexChanged(const QString &arg1)
+{
+    currentFont = arg1.toInt();
+    ui->textAyetler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
+    ui->listSureler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
+    ui->tableKelime->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D; background-color: #ECF0F1; padding: 6px; spacing: 6px;");
+    ui->comboKitaplar->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->comboFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
 }
