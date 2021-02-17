@@ -106,7 +106,7 @@ void MainWindow::on_pushSearch_clicked()
 
     for(int i = 0; i < model->rowCount(); ++i)
     {
-        QString meal = model->record(i).value(1).toString() + " - " + model->record(i).value(2).toString();
+        QString meal = model->record(i).value(0).toString() + " - " + model->record(i).value(1).toString() + " - " + model->record(i).value(2).toString();
         ui->textAyetler->append(meal);
     }
 
