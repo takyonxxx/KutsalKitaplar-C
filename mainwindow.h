@@ -28,10 +28,13 @@ private slots:
 
     void on_comboKitaplar_currentIndexChanged(int index);
 
+    void on_comboFont_currentIndexChanged(const QString &arg1);
+
 private:
     void createFile(QString &fileName);
 
     BookTypes currentType{};
+    int currentFont{12};
     DbManager *db{};
 private:
     Ui::MainWindow *ui;
