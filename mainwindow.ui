@@ -116,6 +116,16 @@
          </widget>
         </item>
         <item>
+         <widget class="QLineEdit" name="lineEditSearch">
+          <property name="minimumSize">
+           <size>
+            <width>200</width>
+            <height>0</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pushSearch">
           <property name="minimumSize">
            <size>
@@ -125,16 +135,6 @@
           </property>
           <property name="text">
            <string>Search</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLineEdit" name="lineEditSearch">
-          <property name="minimumSize">
-           <size>
-            <width>200</width>
-            <height>0</height>
-           </size>
           </property>
          </widget>
         </item>
@@ -163,7 +163,7 @@
      <x>0</x>
      <y>0</y>
      <width>1006</width>
-     <height>24</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
