@@ -27,6 +27,7 @@ public:
     QSqlQueryModel *getSureler(BookTypes type);
     QSqlQueryModel *getAyet(BookTypes type, int sureno);
     QSqlQueryModel *getAyetKelime(int sureno);
+    QSqlQueryModel *getAyetKelimeByAyet(int sureno, int ayet);
     QSqlQueryModel *searchAyet(BookTypes type, QString search_key);
 
 private:

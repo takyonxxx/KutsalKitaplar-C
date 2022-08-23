@@ -30,10 +30,13 @@ private slots:
 
     void on_comboFont_currentIndexChanged(const QString &arg1);
 
+    void on_textAyetler_cursorPositionChanged();
+
 private:
     void createFile(QString &fileName);
 
     BookTypes currentType{};
+    int currentSure{};
     int currentFont{12};
     DbManager *db{};
 private:

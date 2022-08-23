@@ -90,10 +90,25 @@ QSqlQueryModel *DbManager::getAyetKelime(int sureno)
 {
      QSqlQueryModel *model = new QSqlQueryModel;
 
-     model->setQuery("SELECT ayet, latince, turkce FROM tbl_kuran_kelime WHERE sureno = " + QString::number(sureno) + " ORDER BY ayet ASC");
+     model->setQuery("SELECT sureno, ayet, latince, turkce FROM tbl_kuran_kelime WHERE sureno = " + QString::number(sureno) + " ORDER BY ayet ASC");
      model->setHeaderData(0, Qt::Horizontal, ("Sure"));
      model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
-     model->setHeaderData(2, Qt::Horizontal, ("Turkce"));
+     model->setHeaderData(2, Qt::Horizontal, ("Latince"));
+     model->setHeaderData(3, Qt::Horizontal, ("Turkce"));
+     return model;
+}
+
+
+QSqlQueryModel *DbManager::getAyetKelimeByAyet(int sureno, int ayetno)
+{
+     QSqlQueryModel *model = new QSqlQueryModel;
+
+     model->setQuery("SELECT sureno, ayet, latince, turkce FROM tbl_kuran_kelime WHERE sureno = " + QString::number(sureno)
+                     + " And ayet = " + QString::number(ayetno) + " ORDER BY ayet ASC");
+     model->setHeaderData(0, Qt::Horizontal, ("Sure"));
+     model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
+     model->setHeaderData(2, Qt::Horizontal, ("Latince"));
+     model->setHeaderData(3, Qt::Horizontal, ("Turkce"));
      return model;
 }
 
