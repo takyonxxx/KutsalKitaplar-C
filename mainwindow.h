@@ -5,6 +5,7 @@
 #include <QTableView>
 #include <QHeaderView>
 #include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 #include <dbmanager.h>
 
@@ -21,19 +22,15 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_listSureler_clicked(const QModelIndex &index);
+    void on_listSureler_clicked(const QModelIndex &);
     void on_pushSearch_clicked();
-
     void on_pushExit_clicked();
-
-    void on_comboKitaplar_currentIndexChanged(int index);
-
-    void on_comboFont_currentIndexChanged(const QString &arg1);
-
-    void on_textAyetler_cursorPositionChanged();
+    void on_comboKitaplar_currentIndexChanged(int);
+    void on_textAyetler_cursorPositionChanged();    
+    void on_comboFont_currentIndexChanged(int);
 
 private:
-    void createFile(QString &fileName);
+    void createFile(const QString&, const QString&);
 
     BookTypes currentType{};
     int currentSure{};

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include<QStandardPaths>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,14 +11,22 @@ MainWindow::MainWindow(QWidget *parent)
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle("Kutsal Kitaplar");
     currentFont = 12;
+    QString dbFile;
 
-    auto dbFile = QCoreApplication::applicationDirPath() + "/Kutsal_Kitaplar.db";
-    if (!QFile::exists(dbFile))
-    {
-        fprintf(stderr, "%s file not found, will be created.\n", dbFile.toStdString().c_str());
-        QString dbName(":/Kutsal_Kitaplar.db");
-        createFile(dbName);
+    qDebug() << "Available database drivers:" << QSqlDatabase::drivers();
+    if (!QSqlDatabase::isDriverAvailable("QSQLITE")) {
+        qDebug() << "SQLite driver not available";
     }
+
+#if defined(Q_OS_IOS) || defined(Q_OS_ANDROID)
+    QString iosWritablePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    dbFile = iosWritablePath + "/Kutsal_Kitaplar.db";
+#else
+    dbFile = QCoreApplication::applicationDirPath() + "/Kutsal_Kitaplar.db";
+#endif
+
+    QString dbName(":/Kutsal_Kitaplar.db");
+    createFile(dbName, dbFile);
 
     currentType = BookTypes::Kuran;
     ui->centralwidget->setStyleSheet("font-size: 12pt; color:#ECF0F1; background-color: #AAB7B8;");
@@ -40,20 +49,14 @@ MainWindow::MainWindow(QWidget *parent)
 
 
     db = new DbManager(dbFile);
-
     if (db->isOpen())
     {
         auto m_sureler = db->getSureler(currentType);
         ui->listSureler->setModel(m_sureler);
-
         ui->listSureler->setSelectionMode(QAbstractItemView::SingleSelection);
 
         QModelIndex index= ui->listSureler->model()->index(0,0);
         on_listSureler_clicked(index);
-
-        /*QTableView *view = new QTableView;
-        view->setModel(m_sureler);
-        view->show();*/
     }
     else
     {
@@ -63,23 +66,33 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    delete db;
     delete ui;
 }
 
-void MainWindow::createFile(QString &fileName)
+void MainWindow::createFile(const QString& resourcePath, const QString& destinationPath)
 {
-    if (QFile::exists(fileName))
-    {
-        QFile::copy(fileName, "Kutsal_Kitaplar.db");
+    QFile resourceFile(resourcePath);
+    QFile destinationFile(destinationPath);
+
+    if (destinationFile.exists()) {
+        qDebug() << "Database file already exists at the destination:" << destinationPath;
+    } else {
+        if (resourceFile.open(QIODevice::ReadOnly) && destinationFile.open(QIODevice::WriteOnly)) {
+            QByteArray data = resourceFile.readAll();
+            destinationFile.write(data);
+            destinationFile.close();
+            resourceFile.close();
+            qDebug() << "Database file copied to writable location:" << destinationPath;
+        } else {
+            qDebug() << "Error copying database file:" << resourceFile.errorString();
+        }
     }
 }
-
 
 void MainWindow::on_listSureler_clicked(const QModelIndex &index)
 {
     auto model = ui->listSureler->model();
-    currentSure =  model->data(model->index(index.row(), 1)).toInt();
+    currentSure =  model->data(model->index(index.row(), 1)).toInt();   
 
     if (currentType == BookTypes::Kuran)
     {
@@ -99,7 +112,7 @@ void MainWindow::on_listSureler_clicked(const QModelIndex &index)
     }
 
     ui->textAyetler->moveCursor(QTextCursor::Start);
-    //    ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void MainWindow::on_pushSearch_clicked()
@@ -154,24 +167,10 @@ void MainWindow::on_comboKitaplar_currentIndexChanged(int index)
 
     auto m_sureler = db->getSureler(currentType);
     ui->listSureler->setModel(m_sureler);
-
     ui->listSureler->setSelectionMode(QAbstractItemView::SingleSelection);
-
     QModelIndex m_index= ui->listSureler->model()->index(0,0);
     on_listSureler_clicked(m_index);
 
-}
-
-void MainWindow::on_comboFont_currentIndexChanged(const QString &arg1)
-{
-    currentFont = arg1.toInt();
-    ui->textAyetler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
-    ui->listSureler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
-    ui->tableKelime->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D; background-color: #ECF0F1; padding: 6px; spacing: 6px;");
-    ui->comboKitaplar->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->comboFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
 }
 
 void MainWindow::on_textAyetler_cursorPositionChanged()
@@ -202,5 +201,18 @@ void MainWindow::on_textAyetler_cursorPositionChanged()
     auto model_kelime = db->getAyetKelimeByAyet(sure_number, ayet_number);
     ui->tableKelime->setModel(model_kelime);
 
+}
+
+
+void MainWindow::on_comboFont_currentIndexChanged(int index)
+{
+    currentFont = index;
+    ui->textAyetler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
+    ui->listSureler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
+    ui->tableKelime->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D; background-color: #ECF0F1; padding: 6px; spacing: 6px;");
+    ui->comboKitaplar->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->comboFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
 }
 

@@ -23,7 +23,7 @@
          <widget class="QListView" name="listSureler">
           <property name="maximumSize">
            <size>
-            <width>200</width>
+            <width>100</width>
             <height>16777215</height>
            </size>
           </property>
@@ -163,7 +163,7 @@
      <x>0</x>
      <y>0</y>
      <width>1006</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>

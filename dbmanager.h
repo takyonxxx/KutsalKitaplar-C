@@ -24,11 +24,13 @@ public:
 
     bool isOpen() const;
     void showTables();
-    QSqlQueryModel *getSureler(BookTypes type);
-    QSqlQueryModel *getAyet(BookTypes type, int sureno);
-    QSqlQueryModel *getAyetKelime(int sureno);
-    QSqlQueryModel *getAyetKelimeByAyet(int sureno, int ayet);
-    QSqlQueryModel *searchAyet(BookTypes type, QString search_key);
+    bool openDatabase();
+    QSqlQueryModel* executeQuery(const QString &);
+    QSqlQueryModel *getSureler(BookTypes);
+    QSqlQueryModel *getAyet(BookTypes , int );
+    QSqlQueryModel *getAyetKelime(int );
+    QSqlQueryModel *getAyetKelimeByAyet(int , int );
+    QSqlQueryModel *searchAyet(BookTypes , QString );
 
 private:
     QSqlDatabase m_db;
