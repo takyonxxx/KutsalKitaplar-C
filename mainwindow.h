@@ -22,12 +22,13 @@ public:
     ~MainWindow();
 
 private slots:
-    void on_listSureler_clicked(const QModelIndex &);
     void on_pushSearch_clicked();
     void on_pushExit_clicked();
     void on_comboKitaplar_currentIndexChanged(int);
     void on_textAyetler_cursorPositionChanged();    
     void on_comboFont_currentIndexChanged(int);
+
+    void on_comboSureler_currentIndexChanged(int index);
 
 private:
     void createFile(const QString&, const QString&);

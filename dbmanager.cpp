@@ -2,6 +2,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
+#include <QHeaderView>
 #include <QDebug>
 
 DbManager::DbManager(const QString &path)
@@ -110,25 +111,25 @@ QSqlQueryModel* DbManager::getSureler(BookTypes type)
 
 QSqlQueryModel *DbManager::getAyetKelime(int sureno)
 {
-    QSqlQueryModel *model = executeQuery("SELECT sureno, ayet, latince, turkce FROM tbl_kuran_kelime WHERE sureno = "
+    QSqlQueryModel *model = executeQuery("SELECT latince, turkce FROM tbl_kuran_kelime WHERE sureno = "
                                          + QString::number(sureno) + " ORDER BY ayet ASC");
-    model->setHeaderData(0, Qt::Horizontal, ("Sure"));
-    model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
-    model->setHeaderData(2, Qt::Horizontal, ("Latince"));
-    model->setHeaderData(3, Qt::Horizontal, ("Turkce"));
+//    model->setHeaderData(0, Qt::Horizontal, ("Sure"));
+//    model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
+//    model->setHeaderData(0, Qt::Horizontal, ("Latince"));
+//    model->setHeaderData(1, Qt::Horizontal, ("Turkce"));
     return model;
 }
 
 
 QSqlQueryModel *DbManager::getAyetKelimeByAyet(int sureno, int ayetno)
 {
-    QSqlQueryModel *model = executeQuery("SELECT sureno, ayet, latince, turkce FROM tbl_kuran_kelime WHERE sureno = "
+    QSqlQueryModel *model = executeQuery("SELECT latince, turkce FROM tbl_kuran_kelime WHERE sureno = "
                                          + QString::number(sureno)
                                          + " And ayet = " + QString::number(ayetno) + " ORDER BY ayet ASC");
-    model->setHeaderData(0, Qt::Horizontal, ("Sure"));
-    model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
-    model->setHeaderData(2, Qt::Horizontal, ("Latince"));
-    model->setHeaderData(3, Qt::Horizontal, ("Turkce"));
+//    model->setHeaderData(0, Qt::Horizontal, ("Sure"));
+//    model->setHeaderData(1, Qt::Horizontal, ("Ayet"));
+//    model->setHeaderData(2, Qt::Horizontal, ("Latince"));
+//    model->setHeaderData(3, Qt::Horizontal, ("Turkce"));
     return model;
 }
 
@@ -235,3 +236,4 @@ QSqlQueryModel* DbManager::executeQuery(const QString &queryString)
     // Return null if there's an error
     return nullptr;
 }
+

@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QGuiApplication>
+#include <QScreen>
 #include<QStandardPaths>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -10,6 +12,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle("Kutsal Kitaplar");
+
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    QRect screenGeometry = primaryScreen->availableGeometry();
+    setGeometry(screenGeometry);
+
     currentFont = 12;
     QString dbFile;
 
@@ -29,18 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     createFile(dbName, dbFile);
 
     currentType = BookTypes::Kuran;
-    ui->centralwidget->setStyleSheet("font-size: 12pt; color:#ECF0F1; background-color: #AAB7B8;");
-    ui->textAyetler->setStyleSheet("font-size: 12pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
-    ui->listSureler->setStyleSheet("font-size: 12pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
-    ui->tableKelime->setStyleSheet("font-size: 12pt; color:#212F3D; background-color: #ECF0F1;");
-    ui->pushSearch->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
-    ui->pushExit->setStyleSheet("font-size: 13pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
-    ui->comboKitaplar->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->comboFont->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->labelFont->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->lineEditSearch->setStyleSheet("font-size: 12pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->comboFont->setCurrentIndex(0);
-
+    ui->comboFont->setCurrentIndex(1);
     ui->tableKelime->verticalHeader()->hide();
     ui->tableKelime->resizeColumnsToContents();
     ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -52,11 +48,14 @@ MainWindow::MainWindow(QWidget *parent)
     if (db->isOpen())
     {
         auto m_sureler = db->getSureler(currentType);
-        ui->listSureler->setModel(m_sureler);
-        ui->listSureler->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->comboSureler->setModel(m_sureler);
 
-        QModelIndex index= ui->listSureler->model()->index(0,0);
-        on_listSureler_clicked(index);
+        int columnIndex = m_sureler->record().indexOf("sureadi");
+        ui->comboSureler->setModelColumn(columnIndex);
+
+        QModelIndex index= ui->comboSureler->model()->index(0,0);
+        int row = index.row();
+        ui->comboSureler->setCurrentIndex(row);
     }
     else
     {
@@ -87,32 +86,6 @@ void MainWindow::createFile(const QString& resourcePath, const QString& destinat
             qDebug() << "Error copying database file:" << resourceFile.errorString();
         }
     }
-}
-
-void MainWindow::on_listSureler_clicked(const QModelIndex &index)
-{
-    auto model = ui->listSureler->model();
-    currentSure =  model->data(model->index(index.row(), 1)).toInt();   
-
-    if (currentType == BookTypes::Kuran)
-    {
-        // auto suretam = model->data(index).toString();
-        auto model_kelime = db->getAyetKelime(currentSure);
-        ui->tableKelime->setModel(model_kelime);
-    }
-
-    auto model_ayet = db->getAyet(currentType, currentSure);
-
-    ui->textAyetler->clear();
-
-    for(int i = 0; i < model_ayet->rowCount(); ++i)
-    {
-        QString meal = model_ayet->record(i).value(1).toString() + " - " + model_ayet->record(i).value(2).toString();
-        ui->textAyetler->append(meal);
-    }
-
-    ui->textAyetler->moveCursor(QTextCursor::Start);
-    ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 void MainWindow::on_pushSearch_clicked()
@@ -165,12 +138,14 @@ void MainWindow::on_comboKitaplar_currentIndexChanged(int index)
         break;
     }
 
-    auto m_sureler = db->getSureler(currentType);
-    ui->listSureler->setModel(m_sureler);
-    ui->listSureler->setSelectionMode(QAbstractItemView::SingleSelection);
-    QModelIndex m_index= ui->listSureler->model()->index(0,0);
-    on_listSureler_clicked(m_index);
+    if (currentType != BookTypes::Kuran)
+        ui->tableKelime->setHidden(true);
+    else
+        ui->tableKelime->setHidden(false);
 
+    auto m_sureler = db->getSureler(currentType);
+    ui->comboSureler->setModel(m_sureler);
+//    QModelIndex m_index= ui->comboSureler->model()->index(0,0);
 }
 
 void MainWindow::on_textAyetler_cursorPositionChanged()
@@ -206,13 +181,50 @@ void MainWindow::on_textAyetler_cursorPositionChanged()
 
 void MainWindow::on_comboFont_currentIndexChanged(int index)
 {
-    currentFont = index;
-    ui->textAyetler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #0E6655; padding: 6px; spacing: 6px;");
-    ui->listSureler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D ; background-color: #ECF0F1 ;padding: 6px; spacing: 6px;");
-    ui->tableKelime->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#212F3D; background-color: #ECF0F1; padding: 6px; spacing: 6px;");
-    ui->comboKitaplar->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->comboFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
-    ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#148F77 ; padding: 6px; spacing: 6px;");
+    QString selectedFont = ui->comboFont->itemText(index);
+
+    currentFont = selectedFont.toInt();
+    ui->centralwidget->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #AAB7B8;");
+    ui->textAyetler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:#ECF0F1; background-color: #003333; padding: 6px; spacing: 6px;");
+    ui->tableKelime->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; color:white; background-color: #003333; padding: 6px; spacing: 6px;");
+    ui->comboKitaplar->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#0C5F92 ; padding: 6px; spacing: 6px;");
+    ui->comboSureler->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#0C5F92 ; padding: 6px; spacing: 6px;");
+    ui->comboFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#0C5F92 ; padding: 6px; spacing: 6px;");
+    ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#248AC8 ; padding: 6px; spacing: 6px;");
+    ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#248AC8 ; padding: 6px; spacing: 6px;");
+    ui->pushSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
+    ui->pushExit->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
+
+    // Set word wrap delegate for the DisplayRole
+    WordWrapDelegate *wordWrapDelegate = new WordWrapDelegate;
+    ui->tableKelime->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->tableKelime->setItemDelegateForColumn(0, wordWrapDelegate);
+    ui->tableKelime->setItemDelegateForColumn(1, wordWrapDelegate);
+    ui->tableKelime->horizontalHeader()->hide();
+    ui->tableKelime->verticalHeader()->hide();
 }
 
+
+void MainWindow::on_comboSureler_currentIndexChanged(int index)
+{
+    currentSure = index + 1;
+
+    if (currentType == BookTypes::Kuran)
+    {
+        auto model_kelime = db->getAyetKelime(currentSure);
+        ui->tableKelime->setModel(model_kelime);
+    }
+
+    auto model_ayet = db->getAyet(currentType, currentSure);
+
+    ui->textAyetler->clear();
+
+    for (int i = 0; i < model_ayet->rowCount(); ++i)
+    {
+        QString meal = model_ayet->record(i).value(1).toString() + " - " + model_ayet->record(i).value(2).toString();
+        ui->textAyetler->append(meal);
+    }
+
+    ui->textAyetler->moveCursor(QTextCursor::Start);
+    ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+}
