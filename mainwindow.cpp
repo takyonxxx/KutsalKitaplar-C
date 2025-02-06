@@ -61,10 +61,35 @@ MainWindow::MainWindow(QWidget *parent)
     {
         qDebug() << "Database is not open!";
     }
+
+    QAudioDevice outputDevice;
+
+    for (auto &device: QMediaDevices::audioOutputs()) {
+
+        if(device.description().contains("JBL"))
+        {
+            outputDevice = device;
+            m_format.setSampleFormat(QAudioFormat::Int16);
+            m_format.setSampleRate(sampleRate);
+            m_format.setChannelCount(channelCount);
+
+            if (outputDevice.isFormatSupported(m_format)) {
+                m_audioOutput = new QAudioSink(outputDevice, m_format, this);
+                connect(m_audioOutput,&QAudioSink::stateChanged, this, &MainWindow::handleAudioStateChanged);
+                setSpeechEngine();
+                qDebug() << device.description();
+            }
+            break;
+        }
+    }
 }
 
 MainWindow::~MainWindow()
 {
+    if(m_speech)
+        delete m_speech;
+    if(m_audioOutput)
+        delete m_audioOutput;
     delete ui;
 }
 
@@ -85,6 +110,65 @@ void MainWindow::createFile(const QString& resourcePath, const QString& destinat
         } else {
             qDebug() << "Error copying database file:" << resourceFile.errorString();
         }
+    }
+}
+
+void MainWindow::setSpeechEngine()
+{
+    m_speech = new QTextToSpeech(this);
+    m_speech->setPitch(0);
+    connect(m_speech, &QTextToSpeech::stateChanged, this, &MainWindow::onSpeechStateChanged);
+
+    // Populate the languages combobox before connecting its signal.
+    const QVector<QLocale> locales = m_speech->availableLocales();
+    for (const QLocale &locale : locales) {
+        QString name(QString("%1 (%2)")
+                         .arg(QLocale::languageToString(locale.language()))
+                         .arg(QLocale::territoryToString(locale.territory())));
+        QVariant localeVariant(locale);
+        if (name.contains("Turkish"))
+        {
+            qDebug() << "Setting locale:" << name;
+            m_speech->setLocale(locale);
+
+            // Try to set a female voice
+            QVector<QVoice> voices = m_speech->availableVoices();
+            for (const QVoice &voice : voices)
+            {
+                if (voice.gender() == QVoice::Female)
+                {
+                    qDebug() << "Selected female voice:" << voice.name();
+                    m_speech->setVoice(voice);
+                    return; // Stop after setting the first female voice
+                }
+            }
+
+            qDebug() << "No female voice found, using default voice.";
+            return;
+        }
+    }
+}
+
+void MainWindow::onSpeechStateChanged(QTextToSpeech::State state)
+{
+    QString statusMessage;
+
+    if (state == QTextToSpeech::Speaking) {
+        statusMessage = tr("Speech started...");
+        m_speaking = true;
+    } else if (state == QTextToSpeech::Ready)
+    {
+        m_speaking = false;
+        speakNextLine();
+        statusMessage = tr("Speech stopped...playing next line.");
+    }
+    else if (state == QTextToSpeech::Paused)
+        statusMessage = tr("Speech paused...");
+    else
+        statusMessage = tr("Speech error!");
+
+    if (ui->statusBar) {
+        ui->statusBar->showMessage(statusMessage);
     }
 }
 
@@ -114,7 +198,7 @@ void MainWindow::on_pushSearch_clicked()
 
 void MainWindow::on_pushExit_clicked()
 {
-    exit(0);
+    QApplication::quit();
 }
 
 void MainWindow::on_comboKitaplar_currentIndexChanged(int index)
@@ -193,6 +277,7 @@ void MainWindow::on_comboFont_currentIndexChanged(int index)
     ui->labelFont->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#248AC8 ; padding: 6px; spacing: 6px;");
     ui->lineEditSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#248AC8 ; padding: 6px; spacing: 6px;");
     ui->pushSearch->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
+    ui->pushPlay->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
     ui->pushExit->setStyleSheet("font-size: " + QString::number(currentFont) + "pt; font-weight: bold; color: white;background-color:#154360; padding: 6px; spacing: 6px;");
 
     // Set word wrap delegate for the DisplayRole
@@ -228,3 +313,67 @@ void MainWindow::on_comboSureler_currentIndexChanged(int index)
     ui->textAyetler->moveCursor(QTextCursor::Start);
     ui->tableKelime->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
+
+void MainWindow::handleAudioStateChanged(QAudio::State newState)
+{
+    switch (newState) {
+    case QAudio::IdleState:
+        m_audioOutput->stop();
+        break;
+
+    case QAudio::StoppedState:
+        // Stopped for other reasons
+        if (m_audioOutput->error() != QAudio::NoError) {
+            // Error handling
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
+void MainWindow::speakNextLine()
+{
+    if (!m_textQueue.isEmpty())
+    {
+        QString nextLine = m_textQueue.dequeue();
+        m_speech->say(nextLine);
+    }
+    else
+    {
+        ui->pushPlay->setText("Play"); // No more lines to speak
+    }
+}
+
+void MainWindow::on_pushPlay_clicked()
+{
+    if (ui->pushPlay->text() == "Play")
+    {
+        if (m_audioOutput && m_speech)
+        {
+            ui->pushPlay->setText("Stop");
+
+            // Split text into lines and enqueue them
+            m_textQueue.clear();
+            QStringList lines = ui->textAyetler->toPlainText().split("\n", Qt::SkipEmptyParts);
+            for (const QString &line : lines)
+            {
+                m_textQueue.enqueue(line);
+            }
+
+            // Start speaking the first line
+            speakNextLine();
+        }
+    }
+    else
+    {
+        if (m_audioOutput && m_speech)
+        {
+            ui->pushPlay->setText("Play");
+            m_textQueue.clear();  // Clear queue
+            m_speech->stop();     // Stop speech
+        }
+    }
+}
+

@@ -20,72 +20,10 @@
    <layout class="QGridLayout" name="gridLayout">
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout_4">
-      <item row="1" column="0" colspan="4">
-       <widget class="QComboBox" name="comboSureler"/>
-      </item>
-      <item row="8" column="2" colspan="2">
-       <widget class="QPushButton" name="pushExit">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
+      <item row="8" column="0">
+       <widget class="QLabel" name="labelFont">
         <property name="text">
-         <string>Exit</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="3">
-       <widget class="QPushButton" name="pushSearch">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Search</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0" colspan="4">
-       <widget class="QComboBox" name="comboKitaplar">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <item>
-         <property name="text">
-          <string>Kuran</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Tevrat</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Incil</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Zebur</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="0" colspan="3">
-       <widget class="QLineEdit" name="lineEditSearch">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
+         <string>Font</string>
         </property>
        </widget>
       </item>
@@ -139,7 +77,70 @@
         </item>
        </widget>
       </item>
-      <item row="7" column="0" colspan="4">
+      <item row="0" column="0" colspan="4">
+       <widget class="QComboBox" name="comboKitaplar">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>Kuran</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Tevrat</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Incil</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Zebur</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="pushPlay">
+        <property name="text">
+         <string>Play</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QPushButton" name="pushSearch">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Search</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="4">
+       <widget class="QLineEdit" name="lineEditSearch">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="0" colspan="5">
+       <widget class="QTextBrowser" name="textAyetler"/>
+      </item>
+      <item row="7" column="0" colspan="5">
        <widget class="QTableView" name="tableKelime">
         <property name="maximumSize">
          <size>
@@ -182,20 +183,27 @@
         </attribute>
        </widget>
       </item>
-      <item row="8" column="0">
-       <widget class="QLabel" name="labelFont">
+      <item row="8" column="4">
+       <widget class="QPushButton" name="pushExit">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="text">
-         <string>Font</string>
+         <string>Exit</string>
         </property>
        </widget>
       </item>
-      <item row="6" column="0" colspan="4">
-       <widget class="QTextBrowser" name="textAyetler"/>
+      <item row="1" column="0" colspan="4">
+       <widget class="QComboBox" name="comboSureler"/>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <resources/>
  <connections/>

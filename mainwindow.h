@@ -6,6 +6,10 @@
 #include <QHeaderView>
 #include <QFile>
 #include <QFileInfo>
+#include <QAudioSink>
+#include <QMediaDevices>
+#include <QTextToSpeech>
+#include <QQueue>
 #include <QDebug>
 #include <dbmanager.h>
 
@@ -27,11 +31,26 @@ private slots:
     void on_comboKitaplar_currentIndexChanged(int);
     void on_textAyetler_cursorPositionChanged();    
     void on_comboFont_currentIndexChanged(int);
-
     void on_comboSureler_currentIndexChanged(int index);
+    void handleAudioStateChanged(QAudio::State);
+    void onSpeechStateChanged(QTextToSpeech::State state);
+
+    void on_pushPlay_clicked();
 
 private:
     void createFile(const QString&, const QString&);
+    void setSpeechEngine();
+
+    QQueue<QString> m_textQueue;
+    void speakNextLine();
+
+    const unsigned sampleRate = 48000;
+    const unsigned channelCount = 2;
+
+    QAudioSink *m_audioOutput = nullptr;
+    QTextToSpeech *m_speech = nullptr;
+    QAudioFormat m_format;
+    bool m_speaking = false;
 
     BookTypes currentType{};
     int currentSure{};
